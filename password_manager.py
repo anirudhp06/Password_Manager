@@ -83,7 +83,8 @@ def add():
 
     try:
         with open('passwords.txt', 'a') as f:
-            f.write(name + "|" + fer.encrypt(pwd.encode()).decode() + "\n")
+            f.write("\n"+name + "|" + fer.encrypt(pwd.encode()).decode())
+        print("Password Added")
     except cryptography.fernet.InvalidToken:
         print("Token has been changed or lost.")
 
