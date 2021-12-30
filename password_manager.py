@@ -3,6 +3,7 @@ from os import path
 from os import mkdir
 from sys import exit
 import os
+from getpass import getpass
 try:
     from cryptography.fernet import Fernet
     import cryptography
@@ -44,14 +45,14 @@ def proceed(master_pwd,nw_usr):
     if path.isfile("C:\\Users\key_file\key.key"):
         pass
 if path.isfile("C:\\Users\key_file\secret.txt"):
-    master_pwd=input("Enter master password to proceed:")
+    master_pwd=getpass(prompt="Enter the password to proceed with script:")
     key=load_key()
     fer=Fernet(key)
     proceed(master_pwd,0)
 else:
     print("New user DETECTED!")
     print("PLEASE REMEMBER THIS PASSWORD, WITHOUT THIS PASSWORD UR STORAGE IS LOST")
-    master_pwd=input("Enter new masterpassword to proceed:")
+    master_pwd=getpass(prompt="Enter the MASTER PASSWORD:")
     print("IT IS RECOMMENDED TO WRITE DOWN MASTER PASSWORD IN A SAFE PLACE IN THE MEAN TIME.(will proceed after 15 seconds)")
     sleep(15)
     if path.isfile("C:\\Users\key_file\key.key"):
@@ -78,7 +79,7 @@ def view():
 
 def add():
     name = input('Account Name: ')
-    pwd = input("Password: ")
+    pwd = getpass(prompt="Password:")
 
     try:
         with open('passwords.txt', 'a') as f:
