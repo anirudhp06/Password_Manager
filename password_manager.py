@@ -3,6 +3,8 @@ from os import path
 from os import mkdir
 from sys import exit
 import os
+import pass_gen
+from pathlib import Path
 from getpass import getpass
 try:
     from cryptography.fernet import Fernet
@@ -67,31 +69,65 @@ else:
 
 def view():
     try:
-        with open('passwords.txt', 'r') as f:
-            for line in f.readlines():
-                data = line.rstrip()
-                user, passw = data.split("|")
-                print("User:", user, "| Password:",
-                    fer.decrypt(passw.encode()).decode())
+        mypath=Path("passwords.txt")
+        if mypath.stat().st_size==0:
+            print("You do not have any passwords stored currently...")
+        else:    
+            with open('passwords.txt', 'r') as f:
+                for line in f.readlines():    
+                    data = line.rstrip()
+                    user, passw = data.split("|")
+                    print("User:", user, "| Password:",
+                        fer.decrypt(passw.encode()).decode())
     except cryptography.fernet.InvalidToken:
         print("Token has been changed or lost.")
-
+    except FileNotFoundError:
+        print("You do not have any passwords stored currently")
 
 def add():
-    name = input('Account Name: ')
-    pwd = getpass(prompt="Password:")
-
-    try:
-        with open('passwords.txt', 'a') as f:
-            f.write("\n"+name + "|" + fer.encrypt(pwd.encode()).decode())
-        print("Password Added")
-    except cryptography.fernet.InvalidToken:
-        print("Token has been changed or lost.")
-
+    choice=["yes","y"]
+    decide=input("Do you want to generate random password?(Y/N)").lower()
+    if decide in choice:
+        name=input("Enter name of the account:")
+        strength=int(input("Enter Length of password to be generated:"))
+        pwd=pass_gen.gen(strength)
+        print("Password generated for account {} is {}.".format(name,pwd))
+        stopp=False
+        while not stopp:
+            do_you=input("Do you want to generate another password?(Y/N):").lower()
+            if do_you=="y":
+                strength_again=input("Do you want to modify the length of password?(Y/N):").lower()
+                if strength_again == "Y":
+                    strength=int(input("Enter length of password to be generated:"))
+                    pwd=pass_gen.gen(strength)
+                    print("New password:",pwd)
+                else:
+                    print("Generating password with length of previous selection({})".format(strength))
+                    pwd=pass_gen.gen(strength)
+                    print("New password:",pwd)
+            else:
+                print("Proceeding with currently generated password:{}".format(pwd))
+                stopp=True
+        try:
+            with open('passwords.txt', 'a') as f:
+                f.write("\n"+name + "|" + fer.encrypt(pwd.encode()).decode())
+            print("Password Added")
+        except cryptography.fernet.InvalidToken:
+            print("Token has been changed or lost.")
+    else:
+        print("Will save the user given password.")
+        name = input('Account Name: ')
+        pwd = getpass(prompt="Password:")
+        try:
+            with open('passwords.txt', 'a') as f:
+                f.write("\n"+name + "|" + fer.encrypt(pwd.encode()).decode())
+            print("Password Added")
+        except cryptography.fernet.InvalidToken:
+            print("Token has been changed or lost.")
 
 while True:
     mode = input(
-        "Do you want to add new Password or view stored password? (add,view) 'q' to exit ").lower()
+        'Do you want to add new Password or view stored password?\n1."add"\n2."view"\n3."q" to exit ').lower()
     if mode == "q":
         print("Exiting program in 3 seconds")
         sleep(5)
